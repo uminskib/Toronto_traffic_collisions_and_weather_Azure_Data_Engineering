@@ -2,7 +2,7 @@
 
 This repository presents a comprehensive data engineering solution using Azure platform tools. 
 It is based on traffic accident and weather data in Toronto, which is retrieved from an API, and at the end of the process put into an Azure SQL Database.
-The project closes with an analysis and dashboard done in Power BI
+The project closes with an analysis and dashboard done in Power BI.
 The process leverages a combination of tools and services including Azure Data Factory, Azure Data Lake Storage, PySpark, Azure SQL Database and Power BI .
 
 ## Table of Contents
