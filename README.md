@@ -14,7 +14,7 @@ The process leverages a combination of tools and services including Azure Data F
 
 ## Overview
 
-![TMDB_ETL_RECOMMENDATION_ARCHITECTURE_DIAGRAM]()
+![Azure Data Engineering architecture diagram](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/assets/Azure_Data_Engineering_architecture_diagram.png)
 
 
 ## Implementation
