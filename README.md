@@ -8,17 +8,17 @@ The process leverages a combination of tools and services including Azure Data F
 ## Table of Contents
 
 - [Overview](#overview)
-- [Architecture](#architecture)
+- [Implementation](#implementation)
 - [Prerequisites](#prerequisites)
 - [End Note](#end-note)
 
 ## Overview
 
-Pipelines is designed to:
-
-
-## Architecture
 ![TMDB_ETL_RECOMMENDATION_ARCHITECTURE_DIAGRAM]()
+
+
+## Implementation
+
 
 
 ## Prerequisites
