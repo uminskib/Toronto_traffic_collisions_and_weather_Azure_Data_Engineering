@@ -25,6 +25,8 @@ My objectives for this project included:
   
 ## Architecture
 
+The data flow architecture for this project looks as follows:
+
 ![Azure Data Engineering architecture diagram](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/assets/Azure_Data_Engineering_architecture_diagram.png)
 
 - Azure Data Lake Storage: This centralized data lake repository stores both structured and unstructured data, built on Azure Blob Storage to support big data analytics.
