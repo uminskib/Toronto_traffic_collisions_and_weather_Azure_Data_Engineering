@@ -9,8 +9,8 @@ The process leverages a combination of tools and services including Azure Data F
 
 - [Overview](#overview)
 - [Architecture](#architecture)
+- [Data Used](#data-used)
 - [Implementation](#implementation)
-- [Prerequisites](#prerequisites)
 - [End Note](#end-note)
 
 ## Overview
@@ -43,19 +43,49 @@ The data flow architecture for this project looks as follows:
 
 - Microsoft Power BI: Robust business intelligence platform that enables data visualization, transformation, and sharing of insights. It connects to numerous data sources, creating interactive reports and dashboards that help organizations make data-driven decisions and gain insights.
 
+
+## Data Used
+
+- Toronto traffic collision data provided by Toronto Police Service Public Safety Data Portal and its API. This dataset includes all Motor Vehicle Collision (MVC) occurrences by their occurrence date and related offences from 2014 to now. The MVC categories include property damage (PD) collisions, Fail to Remain (FTR) collisions, injury collisions and fatalities. Dataset is updated constantly. More details about the data on this [website](https://data.torontopolice.on.ca/datasets/TorontoPS::traffic-collisions-open-data-asr-t-tbl-001/about). In the ETL pipeline, the following API was directly queryed with appropratie parameters: [https://services.arcgis.com/S9th0jAJ7bqgIRjw/arcgis/rest/services/Traffic_Collisions_Open_Data/FeatureServer/0/query](https://services.arcgis.com/S9th0jAJ7bqgIRjw/arcgis/rest/services/Traffic_Collisions_Open_Data/FeatureServer/0/query)
+  
+- Toronto weather data provided by [Open-Meteo API](https://open-meteo.com/en/docs/historical-weather-api). In this project, daily weather information was used, and the dataset contains, among others: temperature_2m_max (maximum daily air temperature at 2 meters above ground) or precipitation_sum(Sum of daily precipitation, including rain, showers and snowfall). The dataset is updated daily.
+
 ## Implementation
 
 ### Microsoft Azure:
 1. Creating a main resource group needed to develop a solution. It was given the name: Traffic_collision_and_weather_in_toronto_DE_project. It will store all necessary azure services.
 ![Azure Data Engineering resource group](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/assets/Azure_main_resource_group.png)
-2. Creating a storage account with hierarchical namespace enabled(This option convert service in Azure Data Lake Storage). Then, a toronto-data container is defined in the space, where the raw and transformed data will be stored in the corresponding folders.
+
+2. Creating a storage account named torontodatalakestorage with hierarchical namespace enabled(This option convert service in Azure Data Lake Storage). Then, a toronto-data container is defined in the space, where the raw and transformed data will be stored in the corresponding folders.
 ![Azure Data Engineering azure data lake storage](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/assets/Azure_data_lake_storage.png)
-3. Setting up an azure data factory called Traffic-Collision-Weather-Toronto-ETL and developing the following ETL pipeline:
+
+3. Setting of the Azure Key Vault called Toronto-project-DE-keys to store the following secret-keys:
+    - databricks-token - It is used by Azure Data Factory to safely connect with Databricks service using token authentication option.
+    - Toronto-DWH-admin-password - Directly used in Azure Data Factory when connecting to Azure SQL Database (Toronto-DWH) with password authentication. 
+    - Toronto-DWH-powerbi-analyst-user-password - Stored password for Azure SQL Database technical user (Toronto-DWH) to remember credentials. Not used directly in any service
+    - torontodatalakestorage-key - It is used by Azure Data Factory and Databricks to safely connect with main Azure Data Lake Storage service using key.
+  The permission model in the access configuration setting has been changed to Vault access policy. In the access policy option, the Databricks and Data Factory services.
+
+4. Establishing an Azure Databricks service called Toronto_weather_traffic_collision_data_transform_databricks, where the Clean_transform_Toronto_data notebook is executed. The service has configured a secret scope called toronto key_vault_secret that allows you to retrieve a key from Azure Key Vault to securely connect to Azure Data Lake Storage.
+![Azure Data Engineering azure databricks](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/assets/Azure_databricks.png)
+
+5. Creating a Azure SQL Database ("Toronto_DWH") within a SQL server named toronto-dwh-server. Initially, Synapse Analytics was supposed to be configured as DWH, but after verifying the needs and comparing the costs, it was decided to use Azure SQL Database as a place to store the ready data. The service was configured with serverless compute tier using the following documentation: [https://learn.microsoft.com/en-us/azure/azure-sql/database/serverless-tier-overview?view=azuresql&tabs=general-purpose](https://learn.microsoft.com/en-us/azure/azure-sql/database/serverless-tier-overview?view=azuresql&tabs=general-purpose)
+
+6. Setting up an Azure Data Factory called Traffic-Collision-Weather-Toronto-ETL and developing the following ETL pipeline:
 ![Azure Data Engineering Azure_data_factory_data_pipeline](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/assets/Azure_data_factory_data_pipeline.png)
 
+    - I. Web activity (Get number of traffic collision records) - By executing the appropriate query to the API, the number of records about traffic accidents in Toronto was extracted in order to properly configure the data extraction process in the following steps.
+
+    - II. Set variable activity (Set request range for traffic collision) - Based on the previous step, define the request_range variable, which will store a list from 0 to the integer part with the number of records divided by 2000 (the maximum number of records returned by a single request to the API)
+
+    - III.a. ForEach activity (For Each offset records) performing Copy data activity (Toronto_traffic_collisions_copy) - In the loop, a query is executed to the corresponding API with traffic accident data, which outputs 2000 subsequent records each time based on the request range(multiplied by 2000) variable and used in the query in the ResultOffset parameter. The following data is dumped in parts in json format to the subfolder toronto_traffic_collisions_yyyMMdd(job date) in raw folder in Azure Data Lake Storage.
+
+    - III.b. Copy data activity (Toronto_weather_copy) - Retrieving Toronto weather data from the Open-Meteo API using the appropriate parameters and saving in csv format in the toronto_weather_yyyMMdd(job date) subfolder in raw folder in Azure Data Lake Storage.
+
+    - IV. Notebook (Toronto_data_transform_notebook) - Cleaning and transformation of raw data using the Databricks platform, on which a notebook was developed with executable scripts written with the PySpark tool. The entire notebook with code has been saved in the repository [here](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/scripts/Databricks_clean_transform_Toronto_data_notebook.ipynb). 
 
 
-## Prerequisites
+### Microsoft Power BI:
 
 
 ## End Note
