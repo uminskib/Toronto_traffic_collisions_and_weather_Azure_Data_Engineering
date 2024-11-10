@@ -45,6 +45,14 @@ The data flow architecture for this project looks as follows:
 
 ## Implementation
 
+### Microsoft Azure:
+1. Creating a main resource group needed to develop a solution. It was given the name: Traffic_collision_and_weather_in_toronto_DE_project. It will store all necessary azure services.
+![Azure Data Engineering resource group](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/assets/Azure_main_resource_group.png)
+2. Creating a storage account with hierarchical namespace enabled(This option convert service in Azure Data Lake Storage). Then, a toronto-data container is defined in the space, where the raw and transformed data will be stored in the corresponding folders.
+![Azure Data Engineering azure data lake storage](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/assets/Azure_data_lake_storage.png)
+3. Setting up an azure data factory called Traffic-Collision-Weather-Toronto-ETL and developing the following ETL pipeline:
+![Azure Data Engineering Azure_data_factory_data_pipeline](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/assets/Azure_data_factory_data_pipeline.png)
+
 
 
 ## Prerequisites
