@@ -69,7 +69,7 @@ The data flow architecture for this project looks as follows:
 4. Establishing an Azure Databricks service called Toronto_weather_traffic_collision_data_transform_databricks, where the Clean_transform_Toronto_data notebook is executed. The service has configured a secret scope called toronto key_vault_secret that allows you to retrieve a key from Azure Key Vault to securely connect to Azure Data Lake Storage.
 ![Azure Data Engineering azure databricks](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/assets/Azure_databricks.png)
 
-5. Creating a Azure SQL Database ("Toronto_DWH") within a SQL server named toronto-dwh-server. Initially, Synapse Analytics was supposed to be configured as DWH, but after verifying the needs and comparing the costs, it was decided to use Azure SQL Database as a place to store the ready data. The service was configured with serverless compute tier using the following documentation: [https://learn.microsoft.com/en-us/azure/azure-sql/database/serverless-tier-overview?view=azuresql&tabs=general-purpose](https://learn.microsoft.com/en-us/azure/azure-sql/database/serverless-tier-overview?view=azuresql&tabs=general-purpose)
+5. Creating a Azure SQL Database ("Toronto_DWH") within a SQL server named toronto-dwh-server. Initially, Synapse Analytics was supposed to be configured as DWH, but after verifying the needs and comparing the costs, it was decided to use Azure SQL Database as a place to store the ready data. The service was configured with serverless compute tier using the following documentation: [https://learn.microsoft.com/en-us/azure/azure-sql/database/serverless-tier-overview?view=azuresql&tabs=general-purpose](https://learn.microsoft.com/en-us/azure/azure-sql/database/serverless-tier-overview?view=azuresql&tabs=general-purpose).
 
 6. Setting up an Azure Data Factory called Traffic-Collision-Weather-Toronto-ETL and developing the following ETL pipeline:
 ![Azure Data Engineering Azure_data_factory_data_pipeline](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/assets/Azure_data_factory_data_pipeline.png)
@@ -90,8 +90,25 @@ The data flow architecture for this project looks as follows:
 
     - VI. Script activity (Create_calendar_table_in_AzureSQL) - A SQL script is executed that creates a Date Dimension Table called DIM_Date, which contains a continuous range of dates based on min and max date from FCT_Traffic_Collisions table. Table stores various date attributes, for example, Year, Quarter, Month, Day name, Day of week , Is weekend? and more. The whole script is saved in the repository [here](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/scripts/Create_calendar_table_in_Azure_SQL_database.sql).
 
+All of the above steps can be quickly replicated with the help of Azure Resource Manager(ARM) templates, which are json format objects that, using declarative syntax, define the resources to be deployed and the properties of those resources. This makes it possible to recreate the infrastructure and speed up the process of configuring the entire project. For this project, the ARM structures can be found at this [location](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/tree/main/Azure_templates).
             
 ### Microsoft Power BI:
 
+1. Following best practices, a technical account was created in Azure SQL Database (Toronto-DWH) with the ability to read data for Power BI purposes. The script to create an account was saved in the [repository](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/scripts/Create_power_bi_analyst_user_in_azuresql_toronto_dwh.sql), removing its own unique password beforehand.
+
+2. In Power BI Desktop, a connection to the source - Azure SQL Database has been defined using the server name and database and then authorized using the credentials of the technical account.
+![Power_BI_source_connection](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/assets/PowerBI_source_connection.png)
+
+3. All three datasets from the Toronto-DWH database were loaded into the data model and the following relationships between the data were defined:
+![Power_BI_data_relationship](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/assets/PowerBI_data_relationship.png)
+
+4. As a result of the analysis, modifying the data model and using several visualizations, the following dashboard was created:
+![Power_BI_report_view](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/assets/PowerBI_report_view.png)
+
+The Power BI file with the configured connection to the database, the prepared data model and selected visualizations was saved in the [repository](https://github.com/uminskib/Toronto_traffic_collisions_and_weather_Azure_Data_Engineering/blob/main/Toronto_traffic_collisions_and_weather_analysis.pbix). 
 
 ## End Note
+
+- This project provides a great overview to many of Azure services such as Azure Data Factory or Azure Databricks.
+- It would probably be sufficient for the tasks in this project to use only Azure Data Factory and Power BI capabilities. But as part of the self-study and to show possible approaches to larger, real-world business problems, more applications were used, such as Databricks.
+- In the context of future development of the project, it is possible to further statistically analyze the data and use the capabilities of the Azure Machine Learning service to create a model predicting the number of traffic collisions.
